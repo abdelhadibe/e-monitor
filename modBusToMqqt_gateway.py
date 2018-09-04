@@ -181,6 +181,7 @@ class EnergyMeter(object):
 				self.readEnergy_values();
 				self.publishTo_system();
 				self.publishToDomoticz("consumption",voltage_consumption_idx,current_consumption_idx,power_consumption_idx,energy_consumption_idx);
+				self.publishToDomoticz("production",voltage_production_idx, current_production_idx, power_production_idx, energy_production_idx);
 
 				print ("Voltage = {} \n".format(self._voltage_consumption) );
 				print ("Current = {} \n".format(self._current_consumption) );

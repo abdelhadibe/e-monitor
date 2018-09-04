@@ -9,18 +9,17 @@
 #define wifi_password "abdelhadi"
 
 #define mqtt_server "192.168.43.213"
-#define mqtt_user "guest"  //s'il a été configuré sur Mosquitto
-#define mqtt_password "guest" //idem
 
 #define temperature_topic "domoticz/in"  //Topic température
 
 
 //Buffer qui permet de décoder les messages MQTT reçus
 char message_buff[100];
-int tmp_piscine_idx = 87;
+
 long lastMsg = 0;   //Horodatage du dernier message publié sur MQTT
 long lastRecu = 0;
 bool debug = false;  //Affiche sur la console si True
+int tmp_piscine_idx = 87 ; 
 
 /* Broche du bus 1-Wire */
 const byte BROCHE_ONEWIRE = 7;
@@ -33,10 +32,10 @@ enum DS18B20_RCODES {
   INVALID_SENSOR  // Capteur invalide (pas un DS18B20)
 };
 
+
 char tmp[50] ; 
  
-//Création des objets
-
+/* Création de l'objet OneWire pour manipuler le bus 1-Wire */
 OneWire ds(BROCHE_ONEWIRE);
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -96,12 +95,12 @@ byte getTemperature(float *temperature, byte reset_search) {
   // Pas d'erreur
   return READ_OK;
 }
- 
 void setup() {
   Serial.begin(9600);     //Facultatif pour le debug
      //Pin 2 
   setup_wifi();           //On se connecte au réseau wifi
   client.setServer(mqtt_server, 1883);    //Configuration de la connexion au serveur MQTT
+ 
 
 }
 
@@ -130,7 +129,7 @@ void reconnect() {
   //Boucle jusqu'à obtenur une reconnexion
   while (!client.connected()) {
     Serial.print("Connexion au serveur MQTT...");
-    if (client.connect("ESP8266Client", mqtt_user, mqtt_password)) {
+    if (client.connect("ESP8266Client")) {
       Serial.println("OK");
     } else {
       Serial.print("KO, erreur : ");
@@ -148,7 +147,9 @@ void loop() {
   client.loop();
   
   long now = millis();
- float temperature;
+  //Envoi d'un message par minute
+   
+   float temperature;
    
   /* Lit la température ambiante à ~1Hz */
   if (getTemperature(&temperature, true) != READ_OK) {
@@ -156,33 +157,31 @@ void loop() {
     return;
   }
 
-  /* Affiche la température */
-  Serial.print(F("Temperature : "));
-  Serial.print(temperature, 2);
-  Serial.write(176); // Caractère degré
-  Serial.write('C');
-  Serial.println();
+    /* Affiche la température */
+    Serial.print(F("Temperature : "));
+    Serial.print(temperature, 2);
+    Serial.write(176); // Caractère degré
+    Serial.write('C');
+    Serial.println();
+     
     
     StaticJsonBuffer<300> JSONbuffer_t;
     JsonObject& JSONencoder_t = JSONbuffer_t.createObject();
-   
-
-  
+ 
     sprintf(tmp,"%.0f", temperature);   
     //dtostrf(ft, 6, 2,tmp);
-    
+ 
     JSONencoder_t["idx"] = tmp_piscine_idx;
     JSONencoder_t["nvalue"] = 0;
     JSONencoder_t["svalue"] = tmp;
     
-    char JSONmessageBuffer_t[100];;
+    char JSONmessageBuffer_t[100];
     JSONencoder_t.printTo(JSONmessageBuffer_t, sizeof(JSONmessageBuffer_t));
+
     Serial.println("Sending message to MQTT topic..");
     Serial.println(JSONmessageBuffer_t);
 
-    
     client.publish(temperature_topic,JSONmessageBuffer_t);   //Publie la température sur le topic temperature_topic
- 
     delay(2000);
 }
 

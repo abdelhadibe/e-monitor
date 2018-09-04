@@ -128,7 +128,15 @@ class mqtt_domoticz(object):
 				else:
 					self._jsframe_planning['dryer'] = "False" ; 
 				#Send Planning
-				self._mqttc.publish(planning_topic,json.dumps(self._jsframe_planning,ensure_ascii=False)); 			
+				self._mqttc.publish(planning_topic,json.dumps(self._jsframe_planning,ensure_ascii=False)); 		
+
+			elif(payload['idx'] == dish_washer_idx) : 
+				if(payload['nvalue']== 1):
+					self._jsframe_planning['dish_washer'] = "True" ; 
+				else:
+					self._jsframe_planning['dish_washer'] = "False" ; 
+				#Send Planning
+				self._mqttc.publish(planning_topic,json.dumps(self._jsframe_planning,ensure_ascii=False)); 							
 
 
 
@@ -151,6 +159,7 @@ class mqtt_domoticz(object):
 		self._jsframe_planning['home_heating'] = "False" ;
 		self._jsframe_planning['pool_filtration'] = "False" ;
 		self._jsframe_planning['dryer'] = "False" ;
+		self._jsframe_planning['dish_washer'] = "False" ;		
 		
 
 	def runMqqt_domoritcz(self):
