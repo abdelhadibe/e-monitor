@@ -120,11 +120,11 @@ class EnergyMeter(object):
 		production["current"] = self._current_consumption ; 
 		production["power"] = self._active_power_production ; 
 		production["energy"] = self._total_active_energy_production ; 
-		data["consumption"] = consumption ;
-		data["production"] = production ; 
+		data["consumption"] = self._active_power_consumption ; 
+		data["production"] = self._active_power_production ;  
 
 		self._mqttc.publish(energy_meters_topic, json.dumps(data))
-		#print data ; 
+		print data ; 
 
 
 	def on_connect(self, client,userdata ,flags, rc):
