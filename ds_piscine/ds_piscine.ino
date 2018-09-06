@@ -8,7 +8,7 @@
 #define wifi_ssid "pi"
 #define wifi_password "abdelhadi"
 
-#define mqtt_server "192.168.43.213"
+#define mqtt_server "192.168.43.180"
 
 #define temperature_topic "domoticz/in"  //Topic température
 
@@ -22,7 +22,7 @@ bool debug = false;  //Affiche sur la console si True
 int tmp_piscine_idx = 87 ; 
 
 /* Broche du bus 1-Wire */
-const byte BROCHE_ONEWIRE = 7;
+const byte BROCHE_ONEWIRE = D7;
 
 /* Code de retour de la fonction getTemperature() */
 enum DS18B20_RCODES {
