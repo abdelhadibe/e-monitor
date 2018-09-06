@@ -30,6 +30,7 @@ class WeatherForecast(object):
 	_mqttClient = None;
 	_shutdown = None;
 	_responce = None ; 
+
 	def humidityStatus(self, value):
 		if value <= 25 :
 			return "0"
@@ -121,7 +122,7 @@ class WeatherForecast(object):
 					self.publishToDomotiz(domoticz_topic,data_out_3)
 					self.publishToDomotiz(domoticz_topic,data_out_4)
 					self.publishToDomotiz(domoticz_topic,data_out_5)
-
+					"""
 					print ("Ville :"+city)
 					print("Tmp actuele : {} degre".format(tmp))
 					print("Tmp Max : {} degre".format(tmp_max))
@@ -141,8 +142,8 @@ class WeatherForecast(object):
 					print("Heure de previstion : {} ".format(date_1))
 					print("Clouds : {} %".format(clouds_1))
 					print("Heure fin de previstion : {} \n".format(dt_1))
-
-					time.sleep(1) ;			
+					"""
+					time.sleep(10) ;			
 							
 				except Exception as ex : 
 					print("Error to get forecast data: " +str(ex));
@@ -184,7 +185,7 @@ class WeatherForecast(object):
 		self._shutdown = True ;
 		self._mqttClient.loop_stop();
 		self._mqttClient.disconnect();
-		self._responce.close();
+
 
 		print "sss"
 
@@ -206,7 +207,7 @@ def main():
 	forecast = WeatherForecast();
 	forecast.startForecast(url);
 
-	while not shutdown:
+	while True:
 		pass;
 
 	sys.exit(0);
