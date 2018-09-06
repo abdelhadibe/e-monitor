@@ -67,9 +67,9 @@ class EnergyMeter(object):
 				counter.serial.timeout = 1
 				counter.debug = False
 				counter.mode = minimalmodbus.MODE_RTU
-				print("Waiting for initialisation...\n");
-				time.sleep(3);
-				print(log+"Counter id = {} initialised \n".format(counter_id));
+				#print("Waiting for initialisation...\n");
+				#time.sleep(3);
+				#print(log+"Counter id = {} initialised \n".format(counter_id));
 				return counter ; 
 			print("No usb founded !!");
 		except Exception as ex :
@@ -124,9 +124,19 @@ class EnergyMeter(object):
 		data["production"] = production ; 
 
 		self._mqttc.publish(energy_meters_topic, json.dumps(data))
-		print data ; 
+		#print data ; 
 
 
+	def on_connect(self, client,userdata ,flags, rc):
+		if rc==0:
+			print("Connected to broker");
+
+	def on_disconnect(self ,client,userdata , rc):
+		if rc != 0 :
+			print("Error : unexpected disconnection from Mqtt broker");
+			self._mqttc.reconnect();
+		else :
+			print("Disconnection from MQTT broker ");
 
 
 
@@ -139,6 +149,8 @@ class EnergyMeter(object):
 
 
 		self._mqttc = mqtt.Client();
+		self._mqttc.on_connect = self.on_connect ;
+		self._mqttc.on_disconnect = self.on_disconnect ;
 		self._mqttc.connect(host, port, 60);
 		self._mqttc.subscribe(energy_meters_topic);
 
@@ -154,13 +166,13 @@ class EnergyMeter(object):
 			self._voltage_consumption = round(self._consumption_counter.read_float(0, functioncode =4, numberOfRegisters=2), 1);
 			self._current_consumption = round(self._consumption_counter.read_float(6, functioncode =4, numberOfRegisters=2), 1);
 			self._active_power_consumption = round(self._consumption_counter.read_float(12, functioncode =4, numberOfRegisters=2), 1);
-			self._total_active_energy_consumption = round(self._consumption_counter.read_float(342, functioncode =4, numberOfRegisters=2), 4);
+			self._total_active_energy_consumption = round(self._consumption_counter.read_float(342, functioncode =4, numberOfRegisters=2),2);
 			
 			#Photovotaique value 
-			self._voltage_production = self._pv_procduction_counter.read_float(0, functioncode =4, numberOfRegisters=2);
-			self._consumption_counter = self._pv_procduction_counter.read_float(6, functioncode =4, numberOfRegisters=2);
-			self._active_power_production = self._pv_procduction_counter.read_float(12, functioncode =4, numberOfRegisters=2);
-			self._total_active_energy_production = self._pv_procduction_counter.read_float(342, functioncode =4, numberOfRegisters=2);
+			self._voltage_production = round(self._pv_procduction_counter.read_float(0, functioncode =4, numberOfRegisters=2),1);
+			self._consumption_counter = round(self._pv_procduction_counter.read_float(6, functioncode =4, numberOfRegisters=2),1);
+			self._active_power_production = round(self._pv_procduction_counter.read_float(12, functioncode =4, numberOfRegisters=2),1);
+			self._total_active_energy_production = round(self._pv_procduction_counter.read_float(342, functioncode =4, numberOfRegisters=2),2);
 			 
 		except Exception as ex :
 			print("exception in read value {} \n".format(ex));
@@ -182,7 +194,7 @@ class EnergyMeter(object):
 				self.publishTo_system();
 				self.publishToDomoticz("consumption",voltage_consumption_idx,current_consumption_idx,power_consumption_idx,energy_consumption_idx);
 				self.publishToDomoticz("production",voltage_production_idx, current_production_idx, power_production_idx, energy_production_idx);
-
+				"""
 				print ("Voltage = {} \n".format(self._voltage_consumption) );
 				print ("Current = {} \n".format(self._current_consumption) );
 				print ("Power = {} \n".format(self._active_power_consumption )); 
@@ -194,7 +206,7 @@ class EnergyMeter(object):
 				print ("Power = {} \n".format(self._active_power_production )); 
 				print ("Energy = {} \n".format(self._total_active_energy_production));
 				print("------------------------------------------------\n")
-			
+				"""
 			else : 
 				while self.check_usb_device == False :
 					print("Usb unpluged");
@@ -202,7 +214,7 @@ class EnergyMeter(object):
 				self._consumption_counter = self.counter_initilisation(consumption_meter_id);
 				self._pv_procduction_counter = self.counter_initilisation(production_meter_id)
 			
-			time.sleep(1);
+			time.sleep(15);
 
 def main():
 
